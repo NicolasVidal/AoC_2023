@@ -2,6 +2,7 @@
 name = "rust_2023_advent_of_code"
 version = "0.1.0"
 edition = "2021"
+default-run = "main"
 
 [profile.dev]
 opt-level = 3
@@ -25,6 +26,11 @@ tqdm = "0.6.0"
 rand_xoshiro = "0.6.0"
 vec-collections = "0.4.3"
 
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
 [[bin]]
 name = "produce_timings"
 path = "src/produce_timings.rs"
@@ -33,4 +39,10 @@ path = "src/produce_timings.rs"
 [[bench]]
 name = "j1"
 path = "src/bench_j1.rs"
+harness = false
+
+
+[[bench]]
+name = "j2"
+path = "src/bench_j2.rs"
 harness = false

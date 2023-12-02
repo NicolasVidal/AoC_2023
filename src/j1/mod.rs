@@ -35,7 +35,7 @@ pub fn _p2(s: &str) -> usize {
         let digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
         let mut first = None;
-        let mut last = None;
+        let mut last = 0;
         let mut chars_count = line.chars().count();
         for c in 0..chars_count {
             for (i, number) in numbers.iter().enumerate() {
@@ -43,11 +43,11 @@ pub fn _p2(s: &str) -> usize {
                     if first.is_none() {
                         first = Some(i + 1);
                     }
-                    last = Some(i + 1);
+                    last = i + 1;
                 }
             }
         }
-        sum += first.unwrap() * 10 + last.unwrap();
+        sum += first.unwrap() * 10 + last;
     }
     sum
 }
