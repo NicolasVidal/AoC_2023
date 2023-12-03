@@ -25,6 +25,7 @@ timeit = "0.1.2"
 tqdm = "0.6.0"
 rand_xoshiro = "0.6.0"
 vec-collections = "0.4.3"
+heapless = "0.8.0"
 
 
 [[bin]]

@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use itertools::Itertools;
+use heapless::{FnvIndexMap, Vec};
+use smallvec::SmallVec;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
@@ -55,10 +55,11 @@ pub fn p1() -> usize {
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    let mut numbers = HashMap::new();
+    let mut numbers = FnvIndexMap::<(usize, usize), Vec<usize, 6>, 1024>::new();
     for (row, line) in s.lines().enumerate() {
         let mut number = 0;
-        let mut row_and_cols = vec![];
+        let mut star_row = 0;
+        let mut star_col = 0;
         let mut validated_number = false;
         for (col, c) in line.chars().enumerate() {
             if c.is_ascii_digit() {
@@ -77,7 +78,8 @@ pub fn _p2(s: &str) -> usize {
                                         Some(c) => {
                                             if c == '*' {
                                                 validated_number = true;
-                                                row_and_cols.push((line_id, col_id));
+                                                star_row = line_id;
+                                                star_col = col_id;
                                                 break 'validation;
                                             }
                                         }
@@ -89,26 +91,25 @@ pub fn _p2(s: &str) -> usize {
                 }
             } else {
                 if validated_number {
-                    for (star_row, star_col) in row_and_cols.iter() {
-                        let en = numbers.entry((*star_row, *star_col)).or_insert(vec![]);
-                        en.push(number);
+                    if !numbers.contains_key(&(star_row, star_col)) {
+                        numbers.insert((star_row, star_col), Vec::new());
                     }
+                    numbers.get_mut(&(star_row, star_col)).unwrap().push(number);
                 }
                 number = 0;
-                row_and_cols.clear();
+                star_col = 0;
                 validated_number = false;
             }
         }
         if validated_number {
-            for (star_row, star_col) in row_and_cols.iter() {
-                let en = numbers.entry((*star_row, *star_col)).or_insert(vec![]);
-                en.push(number);
+            if !numbers.contains_key(&(star_row, star_col)) {
+                numbers.insert((star_row, star_col), Vec::new());
             }
+            numbers.get_mut(&(star_row, star_col)).unwrap().push(number);
         }
     }
 
     numbers.iter().filter(|(_, v)| v.len() == 2)
-        .sorted_by(|((r0, _), _), ((r1, _), _)| r0.cmp(&r1))
         .map(|(_, v)| v[0] * v[1])
         .sum()
 }
