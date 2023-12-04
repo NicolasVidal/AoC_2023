@@ -1,4 +1,4 @@
-use std::str::Lines;
+use heapless::FnvIndexMap;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
@@ -66,22 +66,25 @@ pub fn count_card_match(card: &str) -> Option<usize> {
     count
 }
 
-pub fn process_card(card: &str, mut lines: Lines) -> usize {
-    let mut total = 1;
-    if let Some(count) = count_card_match(card) {
-        for _ in 0..count {
-            total += process_card(lines.next().unwrap(), lines.clone());
-        }
-    }
-    total
-}
-
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
     let mut lines = s.lines();
     let mut total = 0;
+    let mut already_computed_cards = FnvIndexMap::<usize, usize, 256>::new();
     for (i, line) in lines.clone().enumerate() {
-        total += process_card(lines.next().unwrap(), lines.clone());
+        if !already_computed_cards.contains_key(&i) {
+            already_computed_cards.insert(i, 1);
+        }
+        let self_count = *already_computed_cards.get(&(i)).unwrap();
+        let count = count_card_match(line).unwrap_or(0);
+        for j in 0..count {
+            let index = j + 1 + i;
+            if !already_computed_cards.contains_key(&index) {
+                already_computed_cards.insert(index, 1);
+            }
+            *already_computed_cards.get_mut(&index).unwrap() += self_count;
+        }
+        total += self_count;
     }
     total
 }
