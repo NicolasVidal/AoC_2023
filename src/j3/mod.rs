@@ -1,5 +1,4 @@
 use heapless::{FnvIndexMap, Vec};
-use smallvec::SmallVec;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
