@@ -76,10 +76,10 @@ fn main() {
     println!("{}", j4::p1());
     println!("p2");
     println!("{}", j4::p2());
-    AllocationRegistry::disable_tracking();
     println!("J5 -----------------------------------------------------");
     println!("p1");
     println!("{}", j5::p1());
     println!("p2");
     println!("{}", j5::p2());
+    AllocationRegistry::disable_tracking();
 }

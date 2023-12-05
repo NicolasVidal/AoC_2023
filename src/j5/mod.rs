@@ -1,10 +1,8 @@
-use std::collections::HashMap;
 use std::str::Lines;
-use itertools::Itertools;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
-    let mut seeds = Vec::new();
+    let mut seeds = heapless::Vec::<usize, 32>::new();
 
     let mut lines = s.lines();
 
@@ -53,10 +51,10 @@ pub fn p1() -> usize {
     _p1(include_str!("j5.txt"))
 }
 
-fn check_range(mut start: usize, mut count: usize, mut lines: Lines) -> Vec<(usize, usize)> {
-    let mut output_ranges = Vec::new();
+fn check_range(mut start: usize, mut count: usize, mut lines: Lines) -> heapless::Vec<(usize, usize), 128> {
+    let mut output_ranges = heapless::Vec::<(usize, usize), 128>::new();
 
-    let mut self_ranges = Vec::new();
+    let mut self_ranges = heapless::Vec::<(usize, usize, usize), 128>::new();
 
     while let Some(line) = lines.next() {
         if line.is_empty() {
@@ -68,45 +66,45 @@ fn check_range(mut start: usize, mut count: usize, mut lines: Lines) -> Vec<(usi
         let source = num_split.next().unwrap().parse::<usize>().unwrap();
         let range = num_split.next().unwrap().parse::<usize>().unwrap();
 
-        self_ranges.push((source, range, destination));
+        let _ = self_ranges.push((source, range, destination));
     }
 
-    self_ranges.sort_by(|a, b| a.0.cmp(&b.0));
+    self_ranges.sort_unstable();
 
     for (source, range, destination) in self_ranges {
         if start < source {
             if start + count <= source {
-                output_ranges.push((start, count));
+                let _ = output_ranges.push((start, count));
                 return output_ranges;
             }
-            output_ranges.push((start, source - start));
+            let _ = output_ranges.push((start, source - start));
             count = count - (source - start);
             start = source;
         }
         if start < source + range {
             if start + count <= source + range {
-                output_ranges.push((destination + start - source, count));
+                let _ = output_ranges.push((destination + start - source, count));
                 return output_ranges;
             }
-            output_ranges.push((destination + start - source, range - (start - source)));
+            let _ = output_ranges.push((destination + start - source, range - (start - source)));
             count = count - (source + range - start);
             start = source + range;
         }
     }
-    output_ranges.push((start, count));
+    let _ = output_ranges.push((start, count));
     output_ranges
 }
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    let mut seeds = Vec::new();
+    let mut seeds = heapless::Vec::<usize, 32>::new();
 
     let mut lines = s.lines();
 
     let mut seeds_line = lines.next().unwrap();
     for num_str in seeds_line.split(": ").nth(1).unwrap().split(' ') {
         if let Ok(num) = num_str.parse::<usize>() {
-            seeds.push(num);
+            let _ = seeds.push(num);
         }
     }
     lines.next().unwrap();
@@ -114,24 +112,26 @@ pub fn _p2(s: &str) -> usize {
 
     let mut min = usize::MAX;
 
-    let mut ranges = Vec::new();
+    let mut ranges = heapless::Vec::<(usize, usize), 128>::new();
 
-    for mut seed in &seeds.iter().chunks(2) {
-        let mut start = *seed.next().unwrap();
-        let mut range = *seed.next().unwrap();
+    let mut seeds = seeds.into_iter();
 
+    while let Some(start) = seeds.next() {
+        let range = seeds.next().unwrap();
         ranges.push((start, range));
     }
 
     for _ in 0..7 {
-        let mut new_ranges = Vec::new();
+        let mut new_ranges = heapless::Vec::<(usize, usize), 128>::new();
         for (start, count) in ranges {
             let mut lines = lines.clone();
             for r in check_range(start, count, lines) {
                 new_ranges.push(r);
             }
         }
+
         ranges = new_ranges;
+
 
         while let Some(line) = lines.next() {
             if line.is_empty() {
@@ -144,7 +144,6 @@ pub fn _p2(s: &str) -> usize {
     for (start, count) in ranges {
         min = min.min(start);
     }
-
 
     min
 }
