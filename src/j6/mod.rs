@@ -1,18 +1,20 @@
+use std::str::Lines;
+
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
     let mut lines = s.lines();
 
-    let times = lines.next().unwrap()
-        .split(':').nth(1).unwrap()
-        .split(' ')
-        .filter_map(|s| s.parse::<usize>().ok())
-        .collect::<Vec<_>>();
+    let parse_ints: fn(&mut Lines) -> heapless::Vec<usize, 128> = (|lines: &mut Lines| {
+        lines.next().unwrap()
+            .split(':').nth(1).unwrap()
+            .split(' ')
+            .filter_map(|s| s.parse::<usize>().ok())
+            .collect()
+    });
 
-    let distances = lines.next().unwrap()
-        .split(':').nth(1).unwrap()
-        .split(' ')
-        .filter_map(|s| s.parse::<usize>().ok())
-        .collect::<Vec<_>>();
+    let times = parse_ints(&mut lines);
+
+    let distances: heapless::Vec<usize, 128> = parse_ints(&mut lines);
 
     let mut super_total = 1;
     for (time, distance) in times.iter().zip(distances.iter()) {
@@ -39,25 +41,39 @@ pub fn _p2(s: &str) -> usize {
     let mut lines = s.lines();
     let mut lines = s.lines();
 
-    let time = lines.next().unwrap()
-        .split(':').nth(1).unwrap()
-        .replace(" ", "")
-        .parse::<usize>().unwrap();
+    let mut get_split_int: fn(&mut Lines) -> usize = (|lines: &mut Lines| {
+        lines.next().unwrap()
+            .split(':').nth(1).unwrap()
+            .split(' ')
+            .flat_map(|s| s.chars())
+            .filter_map(|s| if s.is_digit(10) { Some(s.to_digit(10).unwrap() as usize) } else { None })
+            .fold(0, |acc, x| acc * 10 + x)
+    });
 
-    let distance = lines.next().unwrap()
-        .split(':').nth(1).unwrap()
-        .replace(" ", "")
-        .parse::<usize>().unwrap();
+    let time = get_split_int(&mut lines);
+
+    let distance = get_split_int(&mut lines);
 
     let mut total = 0;
+    let mut min_time = 0;
+    let mut max_time = time - 1;
     for t in 0..time {
         let d = (time - t) * t;
         if d > distance {
-            total += 1;
+            min_time = t;
+            break
         }
     }
 
-    total
+    for t in (0..time).rev() {
+        let d = (time - t) * t;
+        if d > distance {
+            max_time = t;
+            break
+        }
+    }
+
+    max_time - min_time + 1
 }
 
 #[allow(unused)]
