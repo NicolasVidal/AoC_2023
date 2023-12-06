@@ -1,5 +1,12 @@
 use std::str::Lines;
 
+
+fn compute_min_max_times(time: usize, distance: usize) -> (usize, usize) {
+    let min_time = (1.0f64 / 2.0f64 * (time as f64 - (-4f64 * distance as f64 + time as f64 * time as f64).sqrt())).floor() as usize + 1;
+    let max_time = (1.0f64 / 2.0f64 * (time as f64 + (-4f64 * distance as f64 + time as f64 * time as f64).sqrt())).ceil() as usize - 1;
+    (min_time, max_time)
+}
+
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
     let mut lines = s.lines();
@@ -17,14 +24,9 @@ pub fn _p1(s: &str) -> usize {
     let distances: heapless::Vec<usize, 128> = parse_ints(&mut lines);
 
     let mut super_total = 1;
-    for (time, distance) in times.iter().zip(distances.iter()) {
-        let mut total = 0;
-        for t in 0..*time {
-            let d = (time - t) * t;
-            if d > *distance {
-                total += 1;
-            }
-        }
+    for (&time, &distance) in times.iter().zip(distances.iter()) {
+        let (min_time, max_time) = compute_min_max_times(time, distance);
+        let total = max_time - min_time + 1;
         super_total *= total;
     }
 
@@ -55,23 +57,7 @@ pub fn _p2(s: &str) -> usize {
     let distance = get_split_int(&mut lines);
 
     let mut total = 0;
-    let mut min_time = 0;
-    let mut max_time = time - 1;
-    for t in 0..time {
-        let d = (time - t) * t;
-        if d > distance {
-            min_time = t;
-            break
-        }
-    }
-
-    for t in (0..time).rev() {
-        let d = (time - t) * t;
-        if d > distance {
-            max_time = t;
-            break
-        }
-    }
+    let (min_time, max_time) = compute_min_max_times(time, distance);
 
     max_time - min_time + 1
 }
