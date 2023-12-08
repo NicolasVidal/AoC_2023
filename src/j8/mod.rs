@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use itertools::Itertools;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
@@ -58,40 +59,69 @@ pub fn _p2(s: &str) -> usize {
         }
         let choices = splits.next().unwrap();
         let mut choices = choices.split(", ");
-        let left = choices.next().unwrap()[1..].to_string();
-        let right = choices.next().unwrap()[..3].to_string();
+        let left = &choices.next().unwrap()[1..];
+        let right = &choices.next().unwrap()[..3];
 
         map.insert(key, (left, right));
     }
 
-    let mut nodes = starts.into_iter().map(|n| map.get(n).unwrap()).collect::<Vec<_>>();
-    let mut next_nodes = vec![];
-    let mut counter = 0;
+    let mut stats = vec![];
+    for start in starts.iter() {
+        let mut current = (start, 0);
+        let mut chars = pattern.chars();
+
+        let mut final_initial_position = None;
+        let mut final_loop_step = None;
+
+        loop {
+            if current.0.ends_with('Z') {
+                if let Some(final_initial_position) = final_initial_position {
+                    final_loop_step = Some(current.1 - final_initial_position);
+                    break;
+                } else {
+                    final_initial_position = Some(current.1);
+                }
+            }
+            loop {
+                match chars.next() {
+                    Some('L') => {
+                        current.0 = &map.get(current.0).unwrap().0;
+                        current.1 += 1;
+                        break;
+                    }
+                    Some('R') => {
+                        current.0 = &map.get(current.0).unwrap().1;
+                        current.1 += 1;
+                        break;
+                    }
+                    _ => chars = pattern.chars(),
+                }
+            }
+        };
+
+        stats.push((start, final_initial_position.unwrap(), final_loop_step.unwrap()));
+    }
+
+    let mut cnt = stats.iter().map(|v| v.1).collect::<Vec<_>>();
+    let steps = stats.iter().map(|v| v.2).collect::<Vec<_>>();
+
+
     loop {
-        for (_, c) in pattern.chars().enumerate() {
-            next_nodes.clear();
-            for node in nodes.iter() {
-                let next_node = match c {
-                    'L' => node.0.as_str(),
-                    'R' => node.1.as_str(),
-                    _ => panic!("Unknown char {}", c),
-                };
-                next_nodes.push(next_node);
-            }
-            counter += 1;
+        if cnt.iter().all_equal() {
+            return cnt[0];
+        }
+        let mut smallest = usize::MAX;
+        let mut smallest_cnt_ref = 0;
 
-            nodes.clear();
-
-            if next_nodes.iter().all(|n| n.ends_with('Z')) {
-                return counter;
-            }
-
-            for next_node in next_nodes.iter() {
-                nodes.push(map.get(next_node).unwrap());
+        for (i, cnt_ref) in cnt.iter().enumerate() {
+            if *cnt_ref < smallest {
+                smallest = cnt[i];
+                smallest_cnt_ref = i;
             }
         }
+
+        cnt[smallest_cnt_ref] += steps[smallest_cnt_ref];
     }
-    panic!()
 }
 
 #[allow(unused)]
@@ -116,6 +146,6 @@ mod j8_tests {
     #[allow(unused)]
     fn test_p2() {
         assert_eq!(6, _p2(include_str!("j8_test_p2.txt")));
-        assert_eq!(42, _p2(include_str!("j8.txt")));
+        assert_eq!(14935034899483, _p2(include_str!("j8.txt")));
     }
 }
