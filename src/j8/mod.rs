@@ -1,20 +1,17 @@
-use std::collections::HashMap;
-use itertools::Itertools;
-
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
     let mut lines = s.lines();
     let pattern = lines.next().unwrap();
 
     lines.next().unwrap();
-    let mut map = HashMap::new();
+    let mut map = heapless::FnvIndexMap::<&str, (&str, &str), 2048>::new();
     for line in lines {
         let mut splits = line.split(" = ");
         let key = splits.next().unwrap();
         let choices = splits.next().unwrap();
         let mut choices = choices.split(", ");
-        let left = choices.next().unwrap()[1..].to_string();
-        let right = choices.next().unwrap()[..3].to_string();
+        let left = &choices.next().unwrap()[1..];
+        let right = &choices.next().unwrap()[..3];
 
         map.insert(key, (left, right));
     }
@@ -24,8 +21,8 @@ pub fn _p1(s: &str) -> usize {
     loop {
         for (_, c) in pattern.chars().enumerate() {
             let next_node = match c {
-                'L' => node.0.as_str(),
-                'R' => node.1.as_str(),
+                'L' => node.0,
+                'R' => node.1,
                 _ => panic!("Unknown char {}", c),
             };
             counter += 1;
@@ -48,9 +45,9 @@ pub fn _p2(s: &str) -> usize {
     let mut lines = s.lines();
     let pattern = lines.next().unwrap();
 
-    let mut starts = vec![];
+    let mut starts = heapless::Vec::<&str, 16>::new();
     lines.next().unwrap();
-    let mut map = HashMap::new();
+    let mut map = heapless::FnvIndexMap::<&str, (&str, &str), 2048>::new();
     for line in lines {
         let mut splits = line.split(" = ");
         let key = splits.next().unwrap();
@@ -65,22 +62,17 @@ pub fn _p2(s: &str) -> usize {
         map.insert(key, (left, right));
     }
 
-    let mut stats = vec![];
+    let mut stats = heapless::Vec::<usize, 16>::new();
     for start in starts.iter() {
         let mut current = (start, 0);
         let mut chars = pattern.chars();
 
         let mut final_initial_position = None;
-        let mut final_loop_step = None;
 
         loop {
             if current.0.ends_with('Z') {
-                if let Some(final_initial_position) = final_initial_position {
-                    final_loop_step = Some(current.1 - final_initial_position);
-                    break;
-                } else {
-                    final_initial_position = Some(current.1);
-                }
+                final_initial_position = Some(current.1);
+                break;
             }
             loop {
                 match chars.next() {
@@ -99,29 +91,29 @@ pub fn _p2(s: &str) -> usize {
             }
         };
 
-        stats.push((start, final_initial_position.unwrap(), final_loop_step.unwrap()));
+        stats.push(final_initial_position.unwrap());
     }
 
-    let mut cnt = stats.iter().map(|v| v.1).collect::<Vec<_>>();
-    let steps = stats.iter().map(|v| v.2).collect::<Vec<_>>();
-
-
-    loop {
-        if cnt.iter().all_equal() {
-            return cnt[0];
+    let gcd_func = |a: usize, b: usize| -> usize {
+        let mut a = a;
+        let mut b = b;
+        while b != 0 {
+            let t = b;
+            b = a % b;
+            a = t;
         }
-        let mut smallest = usize::MAX;
-        let mut smallest_cnt_ref = 0;
+        a
+    };
 
-        for (i, cnt_ref) in cnt.iter().enumerate() {
-            if *cnt_ref < smallest {
-                smallest = cnt[i];
-                smallest_cnt_ref = i;
-            }
+    let lcm_func = |list: &[usize]| -> usize {
+        let mut lcm = list[0];
+        for i in 1..list.len() {
+            lcm = lcm * list[i] / gcd_func(lcm, list[i]);
         }
+        lcm
+    };
 
-        cnt[smallest_cnt_ref] += steps[smallest_cnt_ref];
-    }
+    lcm_func(&stats)
 }
 
 #[allow(unused)]

@@ -60,6 +60,7 @@ fn main() {
     println!("STARTING DAYS COMPUTATIONS");
 
     AllocationRegistry::enable_tracking();
+    let time = std::time::Instant::now();
     println!("J1 -----------------------------------------------------");
     println!("p1");
     println!("{}", j1::p1());
@@ -95,17 +96,16 @@ fn main() {
     println!("{}", j7::p1());
     println!("p2");
     println!("{}", j7::p2());
-    AllocationRegistry::disable_tracking();
     println!("J8 -----------------------------------------------------");
     println!("p1");
     println!("{}", j8::p1());
     println!("p2");
     println!("{}", j8::p2());
-    AllocationRegistry::enable_tracking();
     println!("J9 -----------------------------------------------------");
     println!("p1");
     println!("{}", j9::p1());
     println!("p2");
     println!("{}", j9::p2());
     AllocationRegistry::disable_tracking();
+    dbg!(time.elapsed());
 }
