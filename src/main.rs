@@ -1,3 +1,4 @@
+mod j11;
 mod j10;
 mod j9;
 mod j8;
@@ -107,11 +108,16 @@ fn main() {
     println!("{}", j9::p1());
     println!("p2");
     println!("{}", j9::p2());
-    AllocationRegistry::disable_tracking();
     println!("J10 -----------------------------------------------------");
     println!("p1");
     println!("{}", j10::p1());
     println!("p2");
     println!("{}", j10::p2());
+    println!("J11 -----------------------------------------------------");
+    println!("p1");
+    println!("{}", j11::p1());
+    println!("p2");
+    println!("{}", j11::p2());
+    AllocationRegistry::disable_tracking();
     dbg!(time.elapsed());
 }
