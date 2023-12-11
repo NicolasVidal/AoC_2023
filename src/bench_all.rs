@@ -9,6 +9,8 @@ mod j6;
 mod j7;
 mod j8;
 mod j9;
+mod j10;
+mod j11;
 
 
 fn bench(c: &mut Criterion) {
@@ -32,8 +34,10 @@ fn bench(c: &mut Criterion) {
     group.bench_function("j08p2", |b| b.iter(|| { j8::_p2(black_box(include_str!("j8/j8.txt"))); }));
     group.bench_function("j09p1", |b| b.iter(|| { j9::_p1(black_box(include_str!("j9/j9.txt"))); }));
     group.bench_function("j09p2", |b| b.iter(|| { j9::_p2(black_box(include_str!("j9/j9.txt"))); }));
-    group.bench_function("j10p1", |b| b.iter(|| { j9::_p1(black_box(include_str!("j9/j9.txt"))); }));
-    group.bench_function("j10p2", |b| b.iter(|| { j9::_p2(black_box(include_str!("j9/j9.txt"))); }));
+    group.bench_function("j10p1", |b| b.iter(|| { j10::_p1(black_box(include_str!("j10/j10.txt"))); }));
+    group.bench_function("j10p2", |b| b.iter(|| { j10::_p2(black_box(include_str!("j10/j10.txt"))); }));
+    group.bench_function("j11p1", |b| b.iter(|| { j11::_p1(black_box(include_str!("j11/j11.txt"))); }));
+    group.bench_function("j11p2", |b| b.iter(|| { j11::_p1(black_box(include_str!("j11/j11.txt"))); }));
 }
 
 criterion_group!(benches, bench);
