@@ -1,22 +1,32 @@
 use itertools::Itertools;
 
-
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CharType {
+    Dot,
+    Hashtag,
+    QuestionMark,
+}
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
     let mut total = 0;
     for line in s.lines() {
         let mut parts = line.split(" ");
-        let mut rest_of_line = parts.next().unwrap();
+        let mut rest_of_line = parts.next().unwrap().chars().map(|c| match c {
+            '.' => CharType::Dot,
+            '#' => CharType::Hashtag,
+            '?' => CharType::QuestionMark,
+            _ => panic!("Invalid char in rest_of_line"),
+        }).collect::<Vec<CharType>>();
         let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
             .map(|e| (false, e.parse::<usize>().unwrap())).collect();
 
-        count_arrangements_in_line(&mut total, rest_of_line, rest_of_constraints);
+        count_arrangements_in_line(&mut total, rest_of_line.as_slice(), rest_of_constraints);
     }
     total
 }
 
-fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_constraints: heapless::Vec<(bool, usize), 128>) {
+fn count_arrangements_in_line(total: &mut usize, rest_of_line: &[CharType], rest_of_constraints: heapless::Vec<(bool, usize), 128>) {
     let mut all_constraints = vec![(0, rest_of_constraints)];
 
     while let Some((mut start, mut constraint_list)) = all_constraints.pop() {
@@ -27,20 +37,20 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_con
             continue;
         }
 
-        let c = rest_of_line.chars().nth(start).unwrap();
+        let c = rest_of_line[start];
         {
             match c {
-                '.' => {
-                    if handle_dot(rest_of_line, &mut start, &mut constraint_list) {
+                CharType::Dot => {
+                    if handle_dot(&mut start, &mut constraint_list) {
                         all_constraints.push((start, constraint_list));
                     }
                 }
-                '#' => {
+                CharType::Hashtag => {
                     if handle_hashtag(rest_of_line, &mut start, &mut constraint_list) {
                         all_constraints.push((start, constraint_list));
                     }
                 }
-                '?' => {
+                CharType::QuestionMark => {
                     if constraint_list.len() > 0 && constraint_list[0].1 > 0 {
                         if rest_of_line.len() - start < constraint_list[0].1 {
                             continue;
@@ -50,7 +60,7 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_con
                     let mut cloned_constraint_list = constraint_list.clone();
                     let mut cloned_start = start;
 
-                    if handle_dot(rest_of_line, &mut cloned_start, &mut cloned_constraint_list) {
+                    if handle_dot(&mut cloned_start, &mut cloned_constraint_list) {
                         all_constraints.push((cloned_start, cloned_constraint_list));
                     }
                     if handle_hashtag(rest_of_line, &mut start, &mut constraint_list) {
@@ -63,7 +73,7 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_con
     }
 }
 
-fn handle_hashtag(line: &str, start: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
+fn handle_hashtag(line: &[CharType], start: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
         return false;
     }
@@ -79,12 +89,12 @@ fn handle_hashtag(line: &str, start: &mut usize, constraint_list: &mut heapless:
     }
 
     let slice = &line[*start..(*start + *constraint)];
-    if !slice.chars().all(|c| c == '#' || c == '?') {
+    if !slice.iter().all(|c| *c == CharType::Hashtag || *c == CharType::QuestionMark) {
         return false;
     }
 
-    if let Some(c) = line.chars().nth(*start + *constraint) {
-        if c == '#' {
+    if line.len() > *start + *constraint {
+        if line[*start + *constraint] == CharType::Hashtag {
             return false;
         }
     }
@@ -94,7 +104,7 @@ fn handle_hashtag(line: &str, start: &mut usize, constraint_list: &mut heapless:
     true
 }
 
-fn handle_dot(line: &str, i: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
+fn handle_dot(i: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
         *i += 1;
         return true;
@@ -125,22 +135,27 @@ pub fn _p2(s: &str) -> usize {
     for (i, line) in s.lines().enumerate() {
         println!("{i}");
         let mut parts = line.split(" ");
-        let mut rest_of_line = parts.next().unwrap();
+        let mut rest_of_line = parts.next().unwrap().chars().map(|c| match c {
+            '.' => CharType::Dot,
+            '#' => CharType::Hashtag,
+            '?' => CharType::QuestionMark,
+            _ => panic!("Invalid char in rest_of_line"),
+        }).collect::<Vec<CharType>>();
         let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
             .map(|e| (false, e.parse::<usize>().unwrap())).collect();
 
-        let mut new_str = String::new();
+        let mut new_str = Vec::new();
         let mut new_constraints = heapless::Vec::<(bool, usize), 128>::new();
         for i in 0..5 {
-            new_str.push_str(rest_of_line);
+            new_str.append(&mut rest_of_line.clone());
             if i != 4 {
-                new_str.push('?');
+                new_str.push(CharType::QuestionMark);
             }
             for (started, constraint) in rest_of_constraints.iter() {
                 new_constraints.push((*started, *constraint)).unwrap();
             }
         }
-        count_arrangements_in_line(&mut total, new_str.as_str(), new_constraints);
+        count_arrangements_in_line(&mut total, new_str.as_slice(), new_constraints);
     }
     total
 }
