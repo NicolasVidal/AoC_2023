@@ -15,90 +15,73 @@ pub fn _p1(s: &str) -> usize {
 }
 
 fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_constraints: Vec<(bool, usize)>) {
-    let mut all_constraints = vec![rest_of_constraints];
+    let mut all_constraints = vec![(0, rest_of_constraints)];
 
-    let mut to_remove = Vec::new();
-
-    for c in rest_of_line.chars() {
-        // dbg!(&all_constraints);
-
-        match c {
-            '.' => {
-                to_remove.clear();
-                for (i, constraint_list) in all_constraints.iter_mut().enumerate() {
-                    handle_dot(&mut to_remove, i, constraint_list);
-                }
-                for i in to_remove.iter().rev() {
-                    all_constraints.swap_remove(*i);
-                }
+    while let Some((start, mut constraint_list)) = all_constraints.pop() {
+        if rest_of_line.len() == start {
+            if constraint_list.len() == 0 || constraint_list.len() == 1 && constraint_list[0].1 == 0 {
+                *total += 1;
             }
-            '#' => {
-                to_remove.clear();
-                for (i, constraint_list) in all_constraints.iter_mut().enumerate() {
-                    handle_hashtag(&mut to_remove, i, constraint_list);
+            continue;
+        }
+        let c = rest_of_line.chars().nth(start).unwrap(); {
+            match c {
+                '.' => {
+                    if handle_dot(&mut constraint_list) {
+                        all_constraints.push((start + 1, constraint_list));
+                    }
                 }
-                for i in to_remove.iter().rev() {
-                    all_constraints.swap_remove(*i);
+                '#' => {
+                    if handle_hashtag(&mut constraint_list) {
+                        all_constraints.push((start + 1, constraint_list));
+                    }
                 }
-            }
-            '?' => {
-                to_remove.clear();
-                let mut cloned_all_constraints = all_constraints.clone();
-                for (i, constraint_list) in cloned_all_constraints.iter_mut().enumerate() {
-                    handle_dot(&mut to_remove, i, constraint_list);
-                }
-                for i in to_remove.iter().rev() {
-                    cloned_all_constraints.swap_remove(*i);
-                }
+                '?' => {
+                    let mut cloned_constraint_list = constraint_list.clone();
 
-                to_remove.clear();
-                for (i, constraint_list) in all_constraints.iter_mut().enumerate() {
-                    handle_hashtag(&mut to_remove, i, constraint_list);
+                    if handle_dot(&mut cloned_constraint_list) {
+                        all_constraints.push((start + 1, cloned_constraint_list));
+                    }
+                    if handle_hashtag(&mut constraint_list) {
+                        all_constraints.push((start + 1, constraint_list));
+                    }
                 }
-                for i in to_remove.iter().rev() {
-                    all_constraints.swap_remove(*i);
-                }
-
-                all_constraints.append(&mut cloned_all_constraints);
+                _ => panic!("Invalid char in rest_of_line"),
             }
-            _ => panic!("Invalid char in rest_of_line"),
         }
     }
-    let count = all_constraints.iter().filter(|e| e.len() == 0 || e.len() == 1 && e[0].1 == 0).count();
-    *total += count;
 }
 
-fn handle_hashtag(to_remove: &mut Vec<usize>, i: usize, constraint_list: &mut Vec<(bool, usize)>) {
+fn handle_hashtag(constraint_list: &mut Vec<(bool, usize)>) -> bool {
     if constraint_list.len() == 0 {
-        to_remove.push(i);
-        return;
+        return false;
     }
 
     let (started, constraint) = &mut constraint_list[0];
 
     *started = true;
     if *constraint == 0 {
-        to_remove.push(i);
-        return;
+        return false;
     }
     *constraint -= 1;
+    true
 }
 
-fn handle_dot(to_remove: &mut Vec<usize>, i: usize, constraint_list: &mut Vec<(bool, usize)>) {
+fn handle_dot(constraint_list: &mut Vec<(bool, usize)>) -> bool {
     if constraint_list.len() == 0 {
-        return;
+        return true;
     }
 
     let (started, constraint) = &mut constraint_list[0];
     if !*started {
-        return;
+        return true;
     }
     if *constraint == 0 {
         *started = false;
         constraint_list.remove(0);
-        return;
+        return true;
     }
-    to_remove.push(i);
+    false
 }
 
 #[allow(unused)]
@@ -152,6 +135,6 @@ mod j12_tests {
     #[allow(unused)]
     fn test_p2() {
         assert_eq!(525152, _p2(include_str!("j12_test.txt")));
-        assert_eq!(42, _p2(include_str!("j12.txt")));
+        // assert_eq!(42, _p2(include_str!("j12.txt")));
     }
 }
