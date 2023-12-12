@@ -6,15 +6,15 @@ pub fn _p1(s: &str) -> usize {
     for line in s.lines() {
         let mut parts = line.split(" ");
         let mut rest_of_line = parts.next().unwrap();
-        let mut rest_of_constraints = parts.next().unwrap().split(",")
-            .map(|e| (false, e.parse::<usize>().unwrap())).collect_vec();
+        let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
+            .map(|e| (false, e.parse::<usize>().unwrap())).collect();
 
         count_arrangements_in_line(&mut total, rest_of_line, rest_of_constraints);
     }
     total
 }
 
-fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_constraints: Vec<(bool, usize)>) {
+fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_constraints: heapless::Vec<(bool, usize), 128>) {
     let mut all_constraints = vec![(0, rest_of_constraints)];
 
     while let Some((start, mut constraint_list)) = all_constraints.pop() {
@@ -52,7 +52,7 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_con
     }
 }
 
-fn handle_hashtag(constraint_list: &mut Vec<(bool, usize)>) -> bool {
+fn handle_hashtag(constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
         return false;
     }
@@ -67,7 +67,7 @@ fn handle_hashtag(constraint_list: &mut Vec<(bool, usize)>) -> bool {
     true
 }
 
-fn handle_dot(constraint_list: &mut Vec<(bool, usize)>) -> bool {
+fn handle_dot(constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
         return true;
     }
@@ -96,17 +96,19 @@ pub fn _p2(s: &str) -> usize {
         println!("{i}");
         let mut parts = line.split(" ");
         let mut rest_of_line = parts.next().unwrap();
-        let mut rest_of_constraints = parts.next().unwrap().split(",")
-            .map(|e| (false, e.parse::<usize>().unwrap())).collect_vec();
+        let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
+            .map(|e| (false, e.parse::<usize>().unwrap())).collect();
 
         let mut new_str = String::new();
-        let mut new_constraints = Vec::new();
+        let mut new_constraints = heapless::Vec::<(bool, usize), 128>::new();
         for i in 0..5 {
             new_str.push_str(rest_of_line);
             if i != 4 {
                 new_str.push('?');
             }
-            new_constraints.append(&mut rest_of_constraints.clone());
+            for (started, constraint) in rest_of_constraints.iter() {
+                new_constraints.push((*started, *constraint)).unwrap();
+            }
         }
         count_arrangements_in_line(&mut total, new_str.as_str(), new_constraints);
     }
