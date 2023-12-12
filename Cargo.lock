@@ -661,6 +661,7 @@ dependencies = [
  "peg",
  "rand",
  "rand_xoshiro",
+ "rayon",
  "regex",
  "smallvec",
  "threadpool",

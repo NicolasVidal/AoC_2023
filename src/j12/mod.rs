@@ -1,4 +1,6 @@
 use itertools::Itertools;
+use rayon::prelude::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CharType {
@@ -131,8 +133,11 @@ pub fn p1() -> usize {
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    let mut total = 0;
-    for (i, line) in s.lines().enumerate() {
+
+    let mut lines = s.lines().enumerate().map(|(i, line)| (i, line)).collect::<Vec<(usize, &str)>>();
+
+    lines.par_iter().map(|(i, line)| {
+        let mut total = 0;
         println!("{i}");
         let mut parts = line.split(" ");
         let mut rest_of_line = parts.next().unwrap().chars().map(|c| match c {
@@ -156,8 +161,8 @@ pub fn _p2(s: &str) -> usize {
             }
         }
         count_arrangements_in_line(&mut total, new_str.as_slice(), new_constraints);
-    }
-    total
+        total
+    }).sum()
 }
 
 #[allow(unused)]
