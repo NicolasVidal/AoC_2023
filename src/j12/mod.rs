@@ -1,5 +1,7 @@
 use itertools::Itertools;
 
+
+
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
     let mut total = 0;
@@ -17,33 +19,42 @@ pub fn _p1(s: &str) -> usize {
 fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_constraints: heapless::Vec<(bool, usize), 128>) {
     let mut all_constraints = vec![(0, rest_of_constraints)];
 
-    while let Some((start, mut constraint_list)) = all_constraints.pop() {
-        if rest_of_line.len() == start {
+    while let Some((mut start, mut constraint_list)) = all_constraints.pop() {
+        if rest_of_line.len() <= start {
             if constraint_list.len() == 0 || constraint_list.len() == 1 && constraint_list[0].1 == 0 {
                 *total += 1;
             }
             continue;
         }
-        let c = rest_of_line.chars().nth(start).unwrap(); {
+
+        let c = rest_of_line.chars().nth(start).unwrap();
+        {
             match c {
                 '.' => {
-                    if handle_dot(&mut constraint_list) {
-                        all_constraints.push((start + 1, constraint_list));
+                    if handle_dot(rest_of_line, &mut start, &mut constraint_list) {
+                        all_constraints.push((start, constraint_list));
                     }
                 }
                 '#' => {
-                    if handle_hashtag(&mut constraint_list) {
-                        all_constraints.push((start + 1, constraint_list));
+                    if handle_hashtag(rest_of_line, &mut start, &mut constraint_list) {
+                        all_constraints.push((start, constraint_list));
                     }
                 }
                 '?' => {
-                    let mut cloned_constraint_list = constraint_list.clone();
-
-                    if handle_dot(&mut cloned_constraint_list) {
-                        all_constraints.push((start + 1, cloned_constraint_list));
+                    if constraint_list.len() > 0 && constraint_list[0].1 > 0 {
+                        if rest_of_line.len() - start < constraint_list[0].1 {
+                            continue;
+                        }
                     }
-                    if handle_hashtag(&mut constraint_list) {
-                        all_constraints.push((start + 1, constraint_list));
+
+                    let mut cloned_constraint_list = constraint_list.clone();
+                    let mut cloned_start = start;
+
+                    if handle_dot(rest_of_line, &mut cloned_start, &mut cloned_constraint_list) {
+                        all_constraints.push((cloned_start, cloned_constraint_list));
+                    }
+                    if handle_hashtag(rest_of_line, &mut start, &mut constraint_list) {
+                        all_constraints.push((start, constraint_list));
                     }
                 }
                 _ => panic!("Invalid char in rest_of_line"),
@@ -52,7 +63,7 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &str, rest_of_con
     }
 }
 
-fn handle_hashtag(constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
+fn handle_hashtag(line: &str, start: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
         return false;
     }
@@ -63,22 +74,41 @@ fn handle_hashtag(constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bo
     if *constraint == 0 {
         return false;
     }
-    *constraint -= 1;
+    if line.len() - *start < *constraint {
+        return false;
+    }
+
+    let slice = &line[*start..(*start + *constraint)];
+    if !slice.chars().all(|c| c == '#' || c == '?') {
+        return false;
+    }
+
+    if let Some(c) = line.chars().nth(*start + *constraint) {
+        if c == '#' {
+            return false;
+        }
+    }
+
+    *start += *constraint + 1;
+    constraint_list.remove(0);
     true
 }
 
-fn handle_dot(constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
+fn handle_dot(line: &str, i: &mut usize, constraint_list: &mut heapless::Vec<(bool, usize), 128>) -> bool {
     if constraint_list.len() == 0 {
+        *i += 1;
         return true;
     }
 
     let (started, constraint) = &mut constraint_list[0];
     if !*started {
+        *i += 1;
         return true;
     }
     if *constraint == 0 {
         *started = false;
         constraint_list.remove(0);
+        *i += 1;
         return true;
     }
     false
