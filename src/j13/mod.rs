@@ -14,22 +14,22 @@ pub fn _p2(s: &str) -> usize {
 }
 
 fn compute_reflections(s: &str, use_smudge: bool) -> usize {
-    let mut grids = Vec::<Vec<Vec<char>>>::new();
+    let mut grids = heapless::Vec::<heapless::Vec<heapless::Vec<char, 32>, 32>, 128>::new();
 
-    let mut grid = Vec::new();
+    let mut grid = heapless::Vec::new();
     for line in s.lines() {
         if line.is_empty() {
-            grids.push(grid.clone());
+            grids.push(grid.clone()).unwrap();
             grid.clear();
             continue;
         }
-        let mut row = Vec::<char>::new();
+        let mut row = heapless::Vec::<char, 32>::new();
         for c in line.chars() {
-            row.push(c)
+            row.push(c).unwrap();
         }
-        grid.push(row);
+        grid.push(row).unwrap();
     }
-    grids.push(grid);
+    grids.push(grid).unwrap();
 
     let mut total = 0;
     // search horizontally
