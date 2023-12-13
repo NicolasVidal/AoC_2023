@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use rayon::prelude::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 
@@ -69,7 +68,6 @@ fn count_arrangements_in_line(total: &mut usize, rest_of_line: &[CharType], rest
                         all_constraints.push((start, constraint_list));
                     }
                 }
-                _ => panic!("Invalid char in rest_of_line"),
             }
         }
     }

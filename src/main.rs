@@ -1,3 +1,4 @@
+mod j13;
 mod j12;
 mod j11;
 mod j10;
@@ -125,5 +126,10 @@ fn main() {
     println!("{}", j12::p1());
     println!("p2");
     println!("{}", j12::p2());
+    println!("J13 -----------------------------------------------------");
+    println!("p1");
+    println!("{}", j13::p1());
+    println!("p2");
+    println!("{}", j13::p2());
     dbg!(time.elapsed());
 }
