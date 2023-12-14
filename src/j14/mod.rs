@@ -5,8 +5,8 @@ enum Cell {
     Cube,
 }
 
-const MAX_GRID_WIDTH: usize = 101;
-const MAX_GRID_HEIGHT: usize = 101;
+const MAX_GRID_WIDTH: usize = 100;
+const MAX_GRID_HEIGHT: usize = 100;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
@@ -80,7 +80,7 @@ pub fn _p2(s: &str) -> usize {
     parse_grid(s, &mut grid);
 
     let last_cycle = grid.clone();
-    let mut past_grids = heapless::Vec::<_, 128>::new();
+    let mut past_grids = heapless::Vec::<_, 124>::new();
     let mut counter = 0usize;
     loop {
         tilt_panel(&mut grid, -1, 0);
@@ -89,11 +89,14 @@ pub fn _p2(s: &str) -> usize {
         tilt_panel(&mut grid, 0, 1);
 
         counter += 1;
-        if let Some((j, old_grid)) = past_grids.iter().rev().find(|(j, past_grid)| *past_grid == grid)
+        if let Some((j, old_grid)) = past_grids.iter().find(|(j, past_grid)| *past_grid == grid)
         {
             if (1_000_000_000 - j) % (counter - j) == 0 {
                 break
             }
+        }
+        if past_grids.len() > 34 {
+            past_grids.remove(0);
         }
         past_grids.push((counter, grid.clone()));
     }

@@ -121,7 +121,6 @@ fn main() {
     println!("{}", j11::p1());
     println!("p2");
     println!("{}", j11::p2());
-    AllocationRegistry::disable_tracking();
     println!("J12 -----------------------------------------------------");
     println!("p1");
     println!("{}", j12::p1());
@@ -137,5 +136,6 @@ fn main() {
     println!("{}", j14::p1());
     println!("p2");
     println!("{}", j14::p2());
+    AllocationRegistry::disable_tracking();
     dbg!(time.elapsed());
 }
