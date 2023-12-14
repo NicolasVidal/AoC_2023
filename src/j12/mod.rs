@@ -1,5 +1,7 @@
+use itertools::Itertools;
 use rayon::prelude::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
+use regex::RegexBuilder;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CharType {
@@ -10,20 +12,39 @@ enum CharType {
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
+
+    let mut str = ".??#";
+    let regex = RegexBuilder::new("^[.?]{2}[#?]{2}$").build().unwrap();
+    dbg!(regex.is_match(str));
+
     let mut total = 0;
     for line in s.lines() {
         let mut parts = line.split(" ");
-        let mut rest_of_line = parts.next().unwrap().chars().map(|c| match c {
-            '.' => CharType::Dot,
-            '#' => CharType::Hashtag,
-            '?' => CharType::QuestionMark,
-            _ => panic!("Invalid char in rest_of_line"),
-        }).collect::<Vec<CharType>>();
-        let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
-            .map(|e| (false, e.parse::<usize>().unwrap())).collect();
+        let mut pattern = String::new();
+        // pattern.push_str("^[.?]*?");
 
-        count_arrangements_in_line(&mut total, rest_of_line.as_slice(), rest_of_constraints);
+        let mut string_to_match = parts.next().unwrap();
+
+        let patterns = parts.next().unwrap().split(",")
+            .map(|e| RegexBuilder::new(format!("(^[#?]{{{0}}}[?.])|([?.][#?]{{{0}}}[?.])|([?.][#?]{{{0}}}$)", e.parse::<usize>().unwrap()).as_str()).build().unwrap()).collect_vec();
+
+        dbg!(patterns[0].find_iter("???").collect_vec());
     }
+
+    // let mut total = 0;
+    // for line in s.lines() {
+    //     let mut parts = line.split(" ");
+    //     let mut rest_of_line = parts.next().unwrap().chars().map(|c| match c {
+    //         '.' => CharType::Dot,
+    //         '#' => CharType::Hashtag,
+    //         '?' => CharType::QuestionMark,
+    //         _ => panic!("Invalid char in rest_of_line"),
+    //     }).collect::<Vec<CharType>>();
+    //     let mut rest_of_constraints: heapless::Vec<(bool, usize), 128> = parts.next().unwrap().split(",")
+    //         .map(|e| (false, e.parse::<usize>().unwrap())).collect();
+    //
+    //     count_arrangements_in_line(&mut total, rest_of_line.as_slice(), rest_of_constraints);
+    // }
     total
 }
 
