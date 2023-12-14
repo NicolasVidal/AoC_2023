@@ -60,7 +60,7 @@ impl Card {
 
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.value().partial_cmp(&other.value())
+        Some(self.cmp(other))
     }
 }
 
@@ -103,10 +103,8 @@ struct Hand {
 impl Hand {
     pub fn from_str(s: &str, knight_as_joker: bool) -> Hand {
         let mut cards = [Card::Two; 5];
-        let mut i = 0;
-        for c in s.chars() {
+        for (i, c) in s.chars().enumerate() {
             cards[i] = Card::from_char(c, knight_as_joker);
-            i += 1;
         }
         Hand { cards }
     }
@@ -130,7 +128,7 @@ impl Hand {
         }
         values.sort_unstable();
 
-        let highest_count = if values.len() >= 1 { values[values.len() - 1] } else { 0 };
+        let highest_count = if !values.is_empty() { values[values.len() - 1] } else { 0 };
         let second_highest_count = if values.len() >= 2 { values[values.len() - 2] } else { 0 };
 
         if joker_count == 5 {
@@ -180,21 +178,7 @@ impl Hand {
 
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let self_type = self.to_hand_type();
-        let other_type = other.to_hand_type();
-
-        match self_type.value().partial_cmp(&other_type.value()) {
-            Some(Ordering::Equal) => {
-                for (self_card, other_card) in self.cards.iter().zip(other.cards.iter()) {
-                    match self_card.partial_cmp(other_card) {
-                        Some(Ordering::Equal) => continue,
-                        x => return x,
-                    }
-                }
-                panic!();
-            }
-            x => x,
-        }
+        Some(self.cmp(other))
     }
 }
 
@@ -226,7 +210,7 @@ struct HandAndBid {
 
 impl PartialOrd for HandAndBid {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.hand.partial_cmp(&other.hand)
+        Some(self.cmp(other))
     }
 }
 

@@ -98,7 +98,7 @@ pub fn _p2(s: &str) -> usize {
         past_grids.push((counter, grid.clone()));
     }
 
-    compute_total(&mut grid)
+    compute_total(&grid)
 }
 
 fn compute_total(grid: &heapless::Vec<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>) -> usize {

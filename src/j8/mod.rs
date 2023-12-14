@@ -107,8 +107,8 @@ pub fn _p2(s: &str) -> usize {
 
     let lcm_func = |list: &[usize]| -> usize {
         let mut lcm = list[0];
-        for i in 1..list.len() {
-            lcm = lcm * list[i] / gcd_func(lcm, list[i]);
+        for item in list.iter().skip(1) {
+            lcm = lcm * *item / gcd_func(lcm, *item);
         }
         lcm
     };

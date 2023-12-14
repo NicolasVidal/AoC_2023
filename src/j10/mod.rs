@@ -101,7 +101,7 @@ pub fn _p1(s: &str) -> usize {
 
         next_frontier.retain(|&(row, col, _)| !grid_numbers[row][col]);
 
-        if next_frontier.len() == 0 {
+        if next_frontier.is_empty() {
             return max_distance;
         }
 
@@ -221,7 +221,7 @@ pub fn _p2(s: &str) -> usize {
 
         next_frontier.retain(|&(row, col, _)| !grid_numbers[row][col]);
 
-        if next_frontier.len() == 0 {
+        if next_frontier.is_empty() {
             break;
         }
 

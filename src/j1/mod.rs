@@ -5,7 +5,7 @@ pub fn _p1(s: &str) -> usize {
         let mut first = None;
         let mut last = None;
         for c in line.chars() {
-            if ('0'..='9').contains(&c) {
+            if c.is_ascii_digit() {
                 if first.is_none() {
                     first = Some(c.to_digit(10).unwrap() as usize);
                 }

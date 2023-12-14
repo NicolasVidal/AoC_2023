@@ -48,7 +48,7 @@ pub fn _p2(s: &str) -> usize {
             .split(':').nth(1).unwrap()
             .split(' ')
             .flat_map(|s| s.chars())
-            .filter_map(|s| if s.is_digit(10) { Some(s.to_digit(10).unwrap() as usize) } else { None })
+            .filter_map(|s| if s.is_ascii_digit() { Some(s.to_digit(10).unwrap() as usize) } else { None })
             .fold(0, |acc, x| acc * 10 + x)
     });
 

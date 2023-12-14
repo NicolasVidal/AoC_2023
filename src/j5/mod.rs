@@ -78,7 +78,7 @@ fn check_range(mut start: usize, mut count: usize, mut lines: Lines) -> heapless
                 return output_ranges;
             }
             let _ = output_ranges.push((start, source - start));
-            count = count - (source - start);
+            count -= source - start;
             start = source;
         }
         if start < source + range {
@@ -87,7 +87,7 @@ fn check_range(mut start: usize, mut count: usize, mut lines: Lines) -> heapless
                 return output_ranges;
             }
             let _ = output_ranges.push((destination + start - source, range - (start - source)));
-            count = count - (source + range - start);
+            count -= source + range - start;
             start = source + range;
         }
     }
