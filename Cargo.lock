@@ -253,6 +253,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fastmurmur3"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d7e9bc68be4cdabbb8938140b01a8b5bc1191937f2c7e7ecc2fcebbe2d749df"
+
+[[package]]
 name = "getrandom"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -656,6 +662,7 @@ version = "0.1.0"
 dependencies = [
  "criterion",
  "dashmap",
+ "fastmurmur3",
  "heapless",
  "itertools 0.12.0",
  "peg",

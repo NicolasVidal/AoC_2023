@@ -1,61 +1,54 @@
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-enum Cell {
-    Empty,
-    Rock,
-    Cube,
-}
-
 const MAX_GRID_WIDTH: usize = 100;
 const MAX_GRID_HEIGHT: usize = 100;
 
+const TOTAL: usize = MAX_GRID_WIDTH * MAX_GRID_HEIGHT;
+
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
-    let mut grid = heapless::Vec::<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>::new();
-    parse_grid(s, &mut grid);
+    let mut grid = heapless::Vec::<u8, TOTAL>::new();
+    let (height, width) = parse_grid(s, &mut grid);
 
     let (d_row, d_col) = (-1, 0);
-    tilt_panel(&mut grid, d_row, d_col);
+    tilt_panel(&mut grid, d_row, d_col, height, width);
 
 
-    compute_total(&grid)
+    compute_total(&grid, height, width)
 }
 
-fn parse_grid(s: &str, grid: &mut heapless::Vec<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>) {
+fn parse_grid(s: &str, grid: &mut heapless::Vec<u8, TOTAL>) -> (usize, usize) {
+    let mut height = 0usize;
+    let mut width = 0;
     for line in s.lines() {
-        let mut row = heapless::Vec::<Cell, MAX_GRID_WIDTH>::new();
-        for c in line.chars() {
-            row.push(match c {
-                '.' => Cell::Empty,
-                '#' => Cell::Cube,
-                'O' => Cell::Rock,
-                _ => panic!(),
-            }).unwrap();
+        width = line.len();
+        for c in line.bytes() {
+            grid.push(c).unwrap();
         }
-        grid.push(row).unwrap();
+        height += 1;
     }
+    (height, width)
 }
 
-fn tilt_panel(grid: &mut heapless::Vec<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>, d_row: isize, d_col: isize) {
-    for row in 0..grid.len() {
-        for col in 0..grid[0].len() {
-            let mut old_row = if d_row <= 0 { row as isize } else { grid.len() as isize - row as isize - 1 };
-            let mut old_col = if d_col <= 0 { col as isize } else { grid[0].len() as isize - col as isize - 1 };
-            match grid[old_row as usize][old_col as usize] {
-                Cell::Empty => {}
-                Cell::Rock => {
+fn tilt_panel(grid: &mut heapless::Vec<u8, TOTAL>, d_row: isize, d_col: isize, height: usize, width: usize) {
+    for row in 0..height {
+        for col in 0..width {
+            let mut old_row = if d_row <= 0 { row as isize } else { height as isize - row as isize - 1 };
+            let mut old_col = if d_col <= 0 { col as isize } else { width as isize - col as isize - 1 };
+            match grid[old_row as usize * width + old_col as usize] {
+                b'.' => {}
+                b'O' => {
                     let mut current_row = old_row + d_row;
                     let mut current_col = old_col + d_col;
 
-                    while current_row >= 0 && current_row < grid.len() as isize &&
-                        current_col >= 0 && current_col < grid[0].len() as isize {
-
-                        match grid[current_row as usize][current_col as usize] {
-                            Cell::Empty => {
-                                grid[current_row as usize][current_col as usize] = Cell::Rock;
-                                grid[old_row as usize][old_col as usize] = Cell::Empty;
+                    while current_row >= 0 && current_row < height as isize &&
+                        current_col >= 0 && current_col < width as isize {
+                        match grid[current_row as usize * width + current_col as usize] {
+                            b'.' => {
+                                grid[current_row as usize * width + current_col as usize] = b'O';
+                                grid[old_row as usize * width + old_col as usize] = b'.';
                             }
-                            Cell::Rock => { break; }
-                            Cell::Cube => { break; }
+                            b'O' => { break; }
+                            b'#' => { break; }
+                            _ => panic!("Invalid char"),
                         }
                         old_row = current_row;
                         old_col = current_col;
@@ -63,7 +56,8 @@ fn tilt_panel(grid: &mut heapless::Vec<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_
                         current_col += d_col;
                     }
                 }
-                Cell::Cube => {}
+                b'#' => {}
+                _ => panic!("Invalid char"),
             }
         }
     }
@@ -76,44 +70,46 @@ pub fn p1() -> usize {
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    let mut grid = heapless::Vec::<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>::new();
-    parse_grid(s, &mut grid);
+    let mut grid = &mut heapless::Vec::<u8, TOTAL>::new();
+    let (height, width) = parse_grid(s, &mut grid);
 
     let last_cycle = grid.clone();
-    let mut past_grids = heapless::Vec::<_, 124>::new();
+    let mut past_grids = heapless::Vec::<(usize, u128), 124>::new();
     let mut counter = 0usize;
     loop {
-        tilt_panel(&mut grid, -1, 0);
-        tilt_panel(&mut grid, 0, -1);
-        tilt_panel(&mut grid, 1, 0);
-        tilt_panel(&mut grid, 0, 1);
+        tilt_panel(&mut grid, -1, 0, height, width);
+        tilt_panel(&mut grid, 0, -1, height, width);
+        tilt_panel(&mut grid, 1, 0, height, width);
+        tilt_panel(&mut grid, 0, 1, height, width);
 
         counter += 1;
-        if let Some((j, old_grid)) = past_grids.iter().find(|(j, past_grid)| *past_grid == grid)
+        if let Some((j, old_grid)) = past_grids.iter().find(|(j, past_grid)| *past_grid == calculate_hash(&grid))
         {
             if (1_000_000_000 - j) % (counter - j) == 0 {
-                break
+                break;
             }
         }
-        if past_grids.len() > 34 {
-            past_grids.remove(0);
-        }
-        past_grids.push((counter, grid.clone()));
+        past_grids.push((counter, calculate_hash(grid.as_slice())));
     }
 
-    compute_total(&grid)
+    compute_total(&grid, height, width)
 }
 
-fn compute_total(grid: &heapless::Vec<heapless::Vec<Cell, MAX_GRID_WIDTH>, MAX_GRID_HEIGHT>) -> usize {
+fn calculate_hash(t: &[u8]) -> u128 {
+    fastmurmur3::hash(t)
+}
+
+fn compute_total(grid: &heapless::Vec<u8, TOTAL>, height: usize, width: usize) -> usize {
     let mut total = 0;
-    for row in 0..grid.len() {
-        for col in 0..grid[0].len() {
-            match grid[row][col] {
-                Cell::Empty => {}
-                Cell::Rock => {
-                    total += grid.len() - row;
+    for row in 0..height {
+        for col in 0..width {
+            match grid[row * width + col] {
+                b'.' => {}
+                b'O' => {
+                    total += height - row;
                 }
-                Cell::Cube => {}
+                b'#' => {}
+                _ => panic!("Invalid char"),
             }
         }
     }

@@ -14,6 +14,7 @@ mod j11;
 mod j12;
 mod j13;
 mod j14;
+mod j15;
 
 fn bench(c: &mut Criterion) {
 
@@ -46,6 +47,8 @@ fn bench(c: &mut Criterion) {
     group.bench_function("j13p2", |b| b.iter(|| { j13::_p2(black_box(include_str!("j13/j13.txt"))); }));
     group.bench_function("j14p1", |b| b.iter(|| { j14::_p1(black_box(include_str!("j14/j14.txt"))); }));
     group.bench_function("j14p2", |b| b.iter(|| { j14::_p2(black_box(include_str!("j14/j14.txt"))); }));
+    group.bench_function("j15p1", |b| b.iter(|| { j15::_p1(black_box(include_str!("j15/j15.txt"))); }));
+    group.bench_function("j15p2", |b| b.iter(|| { j15::_p2(black_box(include_str!("j15/j15.txt"))); }));
 }
 
 criterion_group!(benches, bench);
