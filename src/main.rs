@@ -1,3 +1,4 @@
+mod j16;
 mod j15;
 mod j14;
 mod j13;
@@ -66,7 +67,6 @@ fn main() {
     println!("STARTING DAYS COMPUTATIONS");
 
     AllocationRegistry::enable_tracking();
-    let time = std::time::Instant::now();
     println!("J1 -----------------------------------------------------");
     println!("p1");
     println!("{}", j1::p1());
@@ -142,6 +142,10 @@ fn main() {
     println!("{}", j15::p1());
     println!("p2");
     println!("{}", j15::p2());
+    println!("J16 -----------------------------------------------------");
+    println!("p1");
+    println!("{}", j16::p1());
+    println!("p2");
+    println!("{}", j16::p2());
     AllocationRegistry::disable_tracking();
-    dbg!(time.elapsed());
 }
