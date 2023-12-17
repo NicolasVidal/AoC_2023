@@ -1,6 +1,24 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 type Cell = (isize, isize, isize, isize, isize, isize);
+
+#[derive(Eq, PartialEq)]
+struct ToExplore {
+    cell: Cell,
+    cost_and_heuristic: isize,
+}
+
+impl PartialOrd for ToExplore {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ToExplore {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.cost_and_heuristic.cmp(&self.cost_and_heuristic).then(other.cell.cmp(&self.cell))
+    }
+}
 
 fn neighbours_p1(cell: Cell, height: usize, width: usize) -> Vec<Cell> {
     let (row, col, left, right, up, down) = cell;
@@ -62,43 +80,39 @@ fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: u
     let target = (height as isize - 1, width as isize - 1);
     let mut current = (0, 0, 0, 0, 0, 0);
     let mut froms = HashMap::new();
+    let mut to_explore = BinaryHeap::<ToExplore>::new();
 
+    let heuristic = (target.0 - current.0).abs() + (target.1 - current.1).abs();
+    to_explore.push(ToExplore { cell: current, cost_and_heuristic: heuristic });
     graded_cells.insert(current, 0);
 
     loop {
-        let mut min_cost = isize::MAX;
-        let mut min_cell = (0isize, 0isize, 0, 0, 0, 0);
-        for (cell, cost) in &graded_cells {
-            if *cost < min_cost {
-                min_cost = *cost;
-                min_cell = *cell;
-            }
-        }
-        current = min_cell;
+        current = to_explore.pop().unwrap().cell;
+        let min_cost = *graded_cells.get(&current).unwrap();
         if current.0 == target.0 && current.1 == target.1 {
-            let mut optimal_path = vec!();
-            loop {
-                optimal_path.push(current);
-                let from: &Cell = froms.get(&current).unwrap();
-                if from.0 == 0 && from.1 == 0 && from.2 == 0 && from.3 == 0 && from.4 == 0 && from.5 == 0 {
-                    break;
-                }
-                current = *from;
-            }
-
-            let mut grid = vec![vec!['.'; width]; height];
-
-            for cell in optimal_path.iter().rev() {
-                // println!("{},{}", cell.0, cell.1);
-                grid[cell.0 as usize][cell.1 as usize] = match cell {
-                    (0, 0, 0, 0, 0, 0) => 'S',
-                    (_, _, i, 0, 0, 0) if *i > 0 => '<',
-                    (_, _, 0, i, 0, 0) if *i > 0 => '>',
-                    (_, _, 0, 0, i, 0) if *i > 0 => '^',
-                    (_, _, 0, 0, 0, i) if *i > 0 => 'v',
-                    _ => panic!("unexpected cell"),
-                };
-            }
+            // let mut optimal_path = vec!();
+            // loop {
+            //     optimal_path.push(current);
+            //     let from: &Cell = froms.get(&current).unwrap();
+            //     if from.0 == 0 && from.1 == 0 && from.2 == 0 && from.3 == 0 && from.4 == 0 && from.5 == 0 {
+            //         break;
+            //     }
+            //     current = *from;
+            // }
+            //
+            // let mut grid = vec![vec!['.'; width]; height];
+            //
+            // for cell in optimal_path.iter().rev() {
+            //     // println!("{},{}", cell.0, cell.1);
+            //     grid[cell.0 as usize][cell.1 as usize] = match cell {
+            //         (0, 0, 0, 0, 0, 0) => 'S',
+            //         (_, _, i, 0, 0, 0) if *i > 0 => '<',
+            //         (_, _, 0, i, 0, 0) if *i > 0 => '>',
+            //         (_, _, 0, 0, i, 0) if *i > 0 => '^',
+            //         (_, _, 0, 0, 0, i) if *i > 0 => 'v',
+            //         _ => panic!("unexpected cell"),
+            //     };
+            // }
 
             // for line in grid {
             //     println!("{}", line.iter().collect::<String>());
@@ -109,17 +123,17 @@ fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: u
         let neighbours = neighbours_func(current, height, width);
         for neighbour in &neighbours {
             if !explored_cells.contains(neighbour) {
-                let cost = costs[(neighbour.0 * width as isize + neighbour.1) as usize];
-                let new_cost = cost + graded_cells.get(&current).unwrap();
-                let new_cost_heuristic = new_cost + (target.0 - neighbour.0).abs() + (target.1 - neighbour.1).abs();
-                if !graded_cells.contains_key(neighbour) || new_cost_heuristic < *graded_cells.get(neighbour).unwrap() {
+                let new_cost = min_cost + costs[(neighbour.0 * width as isize + neighbour.1) as usize];
+                let heuristic = (target.0 - neighbour.0).abs() + (target.1 - neighbour.1).abs();
+
+                if !graded_cells.contains_key(neighbour) || new_cost < *graded_cells.get(neighbour).unwrap() {
                     froms.insert(*neighbour, current);
                     graded_cells.insert(*neighbour, new_cost);
+                    to_explore.push(ToExplore { cell: *neighbour, cost_and_heuristic: new_cost + heuristic });
                 }
             }
         }
         explored_cells.insert(current);
-        graded_cells.remove(&current);
     }
 }
 
