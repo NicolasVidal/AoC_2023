@@ -71,19 +71,19 @@ pub fn p1() -> usize {
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
     let mut grid = &mut heapless::Vec::<u8, TOTAL>::new();
-    let (height, width) = parse_grid(s, &mut grid);
+    let (height, width) = parse_grid(s, grid);
 
     let last_cycle = grid.clone();
     let mut past_grids = heapless::Vec::<(usize, u128), 124>::new();
     let mut counter = 0usize;
     loop {
-        tilt_panel(&mut grid, -1, 0, height, width);
-        tilt_panel(&mut grid, 0, -1, height, width);
-        tilt_panel(&mut grid, 1, 0, height, width);
-        tilt_panel(&mut grid, 0, 1, height, width);
+        tilt_panel(grid, -1, 0, height, width);
+        tilt_panel(grid, 0, -1, height, width);
+        tilt_panel(grid, 1, 0, height, width);
+        tilt_panel(grid, 0, 1, height, width);
 
         counter += 1;
-        if let Some((j, old_grid)) = past_grids.iter().find(|(j, past_grid)| *past_grid == calculate_hash(&grid))
+        if let Some((j, old_grid)) = past_grids.iter().find(|(j, past_grid)| *past_grid == calculate_hash(grid))
         {
             if (1_000_000_000 - j) % (counter - j) == 0 {
                 break;
@@ -92,7 +92,7 @@ pub fn _p2(s: &str) -> usize {
         past_grids.push((counter, calculate_hash(grid.as_slice())));
     }
 
-    compute_total(&grid, height, width)
+    compute_total(grid, height, width)
 }
 
 fn calculate_hash(t: &[u8]) -> u128 {

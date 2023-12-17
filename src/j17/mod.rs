@@ -61,10 +61,10 @@ fn neighbours_p2(cell: Cell, height: usize, width: usize) -> Vec<Cell> {
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
-    find_min_cost_path(s, neighbours_p1)
+    find_min_cost_path(s, neighbours_p1, false)
 }
 
-fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: usize) -> Vec<Cell>) -> usize {
+fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: usize) -> Vec<Cell>, show_path: bool) -> usize {
     let mut costs = Vec::new();
     let width = s.lines().next().unwrap().len();
     for line in s.lines() {
@@ -74,13 +74,13 @@ fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: u
     }
     let height = costs.len() / width;
 
-    let mut explored_cells = HashSet::new();
-    let mut graded_cells = HashMap::new();
+    let mut explored_cells = HashSet::with_capacity(750_000);
+    let mut graded_cells = HashMap::with_capacity(750_000);
 
     let target = (height as isize - 1, width as isize - 1);
     let mut current = (0, 0, 0, 0, 0, 0);
     let mut froms = HashMap::new();
-    let mut to_explore = BinaryHeap::<ToExplore>::new();
+    let mut to_explore = BinaryHeap::<ToExplore>::with_capacity(5150);
 
     let heuristic = (target.0 - current.0).abs() + (target.1 - current.1).abs();
     to_explore.push(ToExplore { cell: current, cost_and_heuristic: heuristic });
@@ -90,33 +90,35 @@ fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: u
         current = to_explore.pop().unwrap().cell;
         let min_cost = *graded_cells.get(&current).unwrap();
         if current.0 == target.0 && current.1 == target.1 {
-            // let mut optimal_path = vec!();
-            // loop {
-            //     optimal_path.push(current);
-            //     let from: &Cell = froms.get(&current).unwrap();
-            //     if from.0 == 0 && from.1 == 0 && from.2 == 0 && from.3 == 0 && from.4 == 0 && from.5 == 0 {
-            //         break;
-            //     }
-            //     current = *from;
-            // }
-            //
-            // let mut grid = vec![vec!['.'; width]; height];
-            //
-            // for cell in optimal_path.iter().rev() {
-            //     // println!("{},{}", cell.0, cell.1);
-            //     grid[cell.0 as usize][cell.1 as usize] = match cell {
-            //         (0, 0, 0, 0, 0, 0) => 'S',
-            //         (_, _, i, 0, 0, 0) if *i > 0 => '<',
-            //         (_, _, 0, i, 0, 0) if *i > 0 => '>',
-            //         (_, _, 0, 0, i, 0) if *i > 0 => '^',
-            //         (_, _, 0, 0, 0, i) if *i > 0 => 'v',
-            //         _ => panic!("unexpected cell"),
-            //     };
-            // }
+            if show_path {
+                let mut optimal_path = vec!();
+                loop {
+                    optimal_path.push(current);
+                    let from: &Cell = froms.get(&current).unwrap();
+                    if from.0 == 0 && from.1 == 0 && from.2 == 0 && from.3 == 0 && from.4 == 0 && from.5 == 0 {
+                        break;
+                    }
+                    current = *from;
+                }
 
-            // for line in grid {
-            //     println!("{}", line.iter().collect::<String>());
-            // }
+                let mut grid = vec![vec!['.'; width]; height];
+
+                for cell in optimal_path.iter().rev() {
+                    // println!("{},{}", cell.0, cell.1);
+                    grid[cell.0 as usize][cell.1 as usize] = match cell {
+                        (0, 0, 0, 0, 0, 0) => 'S',
+                        (_, _, i, 0, 0, 0) if *i > 0 => '<',
+                        (_, _, 0, i, 0, 0) if *i > 0 => '>',
+                        (_, _, 0, 0, i, 0) if *i > 0 => '^',
+                        (_, _, 0, 0, 0, i) if *i > 0 => 'v',
+                        _ => panic!("unexpected cell"),
+                    };
+                }
+
+                for line in grid {
+                    println!("{}", line.iter().collect::<String>());
+                }
+            }
 
             return min_cost as usize;
         }
@@ -127,7 +129,9 @@ fn find_min_cost_path(s: &str, neighbours_func: fn(Cell, height: usize, width: u
                 let heuristic = (target.0 - neighbour.0).abs() + (target.1 - neighbour.1).abs();
 
                 if !graded_cells.contains_key(neighbour) || new_cost < *graded_cells.get(neighbour).unwrap() {
-                    froms.insert(*neighbour, current);
+                    if show_path {
+                        froms.insert(*neighbour, current);
+                    }
                     graded_cells.insert(*neighbour, new_cost);
                     to_explore.push(ToExplore { cell: *neighbour, cost_and_heuristic: new_cost + heuristic });
                 }
@@ -144,7 +148,7 @@ pub fn p1() -> usize {
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    find_min_cost_path(s, neighbours_p2)
+    find_min_cost_path(s, neighbours_p2, false)
 }
 
 #[allow(unused)]

@@ -19,7 +19,7 @@ pub fn _p1(s: &str) -> usize {
     let mut node = map.get("AAA").unwrap();
     let mut counter = 0;
     loop {
-        for (_, c) in pattern.chars().enumerate() {
+        for c in pattern.chars() {
             let next_node = match c {
                 'L' => node.0,
                 'R' => node.1,
