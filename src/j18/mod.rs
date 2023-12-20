@@ -103,7 +103,10 @@ pub fn p1() -> usize {
 
 #[allow(unused)]
 pub fn _p2(s: &str) -> usize {
-    for line in s.lines() {}
+    for line in s.lines() {
+        let mut split = line.split(' ');
+        let mut code = split.nth(2).unwrap().parse::<usize>().unwrap();
+    }
     42
 }
 
@@ -128,7 +131,7 @@ mod j18_tests {
     #[test]
     #[allow(unused)]
     fn test_p2() {
-        assert_eq!(42, _p2(include_str!("j18_test.txt")));
+        assert_eq!(952408144115, _p2(include_str!("j18_test.txt")));
         assert_eq!(42, _p2(include_str!("j18.txt")));
     }
 }
