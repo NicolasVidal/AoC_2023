@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use itertools::Itertools;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SignalType {
@@ -60,7 +61,7 @@ pub fn _p1(s: &str) -> usize {
     for (id, module) in nodes.iter() {
         for module_output_id in module.output.iter() {
             if !nodes.contains_key(module_output_id) {
-                continue
+                continue;
             }
             let module_output = nodes.get(module_output_id).unwrap();
             if let ModuleType::Conjunction { .. } = module_output.module_type {
@@ -114,7 +115,6 @@ pub fn _p1(s: &str) -> usize {
                         for output in module.output.iter() {
                             signals_queue.push_back((to, output, SignalType::High)).unwrap();
                         }
-
                     }
                 }
                 ModuleType::Broadcaster => {
@@ -168,7 +168,7 @@ pub fn _p2(s: &str) -> usize {
     for (id, module) in nodes.iter() {
         for module_output_id in module.output.iter() {
             if !nodes.contains_key(module_output_id) {
-                continue
+                continue;
             }
             let module_output = nodes.get(module_output_id).unwrap();
             if let ModuleType::Conjunction { .. } = module_output.module_type {
@@ -184,6 +184,16 @@ pub fn _p2(s: &str) -> usize {
         }
     }
 
+    dbg!(nodes.iter().flat_map(|(id, module)|
+    (module.output.iter().map(move |output_id|(id, output_id))))
+        .map(|(id, output_id)| format!("{0}\\[DirectedEdge]{1}", id, output_id))
+        .join(","));
+    println!("{}", (nodes.iter().flat_map(|(id, module)|
+        (module.output.iter().map(move |output_id|(id, output_id))))
+        .map(|(id, output_id)| format!("{0} -> {1}", id, output_id))
+        .join(";\n")));
+
+    return 666;
     let mut signals_queue = heapless::Deque::<(&str, &str, SignalType), 64>::new();
 
     let mut button_press = 0;
@@ -219,7 +229,6 @@ pub fn _p2(s: &str) -> usize {
                         for output in module.output.iter() {
                             signals_queue.push_back((to, output, SignalType::High)).unwrap();
                         }
-
                     }
                 }
                 ModuleType::Broadcaster => {
