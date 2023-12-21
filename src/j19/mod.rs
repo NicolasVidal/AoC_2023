@@ -214,11 +214,11 @@ pub fn _p2(s: &str) -> usize {
 
     let mut start = "in";
 
-    let mut acceptance_workflows = heapless::Vec::<(&str, Part, Part), 1024>::new();
+    let mut acceptance_workflows = heapless::Vec::<(&str, Part, Part), 64>::new();
 
     acceptance_workflows.push((start, Part { x: 1, m: 1, a: 1, s: 1 }, Part { x: 4000, m: 4000, a: 4000, s: 4000 })).unwrap();
 
-    let mut final_acceptance = heapless::Vec::<(&str, Part, Part), 1024>::new();
+    let mut final_acceptance = heapless::Vec::<(&str, Part, Part), 540>::new();
 
     while let Some((id, mut old_min, mut old_max)) = acceptance_workflows.pop() {
         if old_min.x > old_max.x || old_min.m > old_max.m || old_min.a > old_max.a || old_min.s > old_max.s {

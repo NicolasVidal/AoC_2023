@@ -163,7 +163,9 @@ fn main() {
     println!("p1");
     println!("{}", j18::p1());
     println!("p2");
+    AllocationRegistry::disable_tracking();
     // println!("{}", j18::p2());
+    AllocationRegistry::enable_tracking();
     println!("J19 -----------------------------------------------------");
     println!("p1");
     println!("{}", j19::p1());
@@ -176,8 +178,10 @@ fn main() {
     // println!("{}", j20::p2());
     println!("J21 -----------------------------------------------------");
     println!("p1");
+    AllocationRegistry::disable_tracking();
     println!("{}", j21::p1());
     println!("p2");
-    println!("{}", j21::p2());
+    // println!("{}", j21::p2());
+    AllocationRegistry::enable_tracking();
     AllocationRegistry::disable_tracking();
 }
