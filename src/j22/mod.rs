@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet};
-use itertools::Itertools;
+use std::cmp::Reverse;
+use std::collections::HashSet;
 
 #[allow(unused)]
 pub fn _p1(s: &str) -> usize {
@@ -55,64 +55,56 @@ pub fn _p1(s: &str) -> usize {
         z_lowest_offsets.push(y_lowest_offsets);
     }
 
+    bricks.sort_unstable_by_key(|(_, (_, _, z), (_, _, _))| Reverse(*z));
+
     let mut total_bricks = bricks.clone();
     let mut supporting_brick = HashSet::new();
 
     loop {
-        for x in min.0..=max.0 {
-            for y in min.1..=max.1 {
-                print!("{}", z_lowest_offsets[x][y].0);
-            }
-            println!();
-        }
-        println!();
-
-
-        for x in min.0..=max.0 {
-            for y in min.1..=max.1 {
-                print!("{}", z_lowest_offsets[x][y].1);
-            }
-            println!();
-        }
-        println!();
+        // for x in min.0..=max.0 {
+        //     for y in min.1..=max.1 {
+        //         print!("{}", z_lowest_offsets[x][y].0);
+        //     }
+        //     println!();
+        // }
+        // println!();
+        //
+        //
+        // for x in min.0..=max.0 {
+        //     for y in min.1..=max.1 {
+        //         print!("{}", z_lowest_offsets[x][y].1);
+        //     }
+        //     println!();
+        // }
+        // println!();
 
         if bricks.len() == 0 {
             break;
         }
 
-        let mut lowest_brick_index = 0;
         let mut lowest_offset = i32::MAX;
         let mut support_position = (0, 0);
         let mut supports = Vec::new();
         let mut base_z = i32::MAX;
 
-        for (i, brick) in bricks.iter().enumerate() {
-            let mut offset = i32::MAX;
-            for x in brick.1.0..=brick.2.0 {
-                for y in brick.1.1..=brick.2.1 {
-                    offset = brick.1.2 as i32 - z_lowest_offsets[x][y].1;
+        let brick = bricks.pop().unwrap();
+        let mut offset = i32::MAX;
+        for x in brick.1.0..=brick.2.0 {
+            for y in brick.1.1..=brick.2.1 {
+                offset = brick.1.2 as i32 - z_lowest_offsets[x][y].1;
 
-                    assert!(offset >= 0);
-                    if offset < lowest_offset || offset == lowest_offset && z_lowest_offsets[x][y].1 < base_z {
-                        supports.clear();
-                        lowest_offset = offset;
-                        lowest_brick_index = i;
-                        support_position = (x, y);
-                        base_z = z_lowest_offsets[x][y].1;
-                    }
+                assert!(offset >= 0);
+                if offset < lowest_offset {
+                    supports.clear();
+                    lowest_offset = offset;
+                    support_position = (x, y);
+                    base_z = z_lowest_offsets[x][y].1;
+                }
 
-                    if lowest_offset == offset {
-                        supports.push(z_lowest_offsets[x][y].0);
-                    }
+                if lowest_offset == offset {
+                    supports.push(z_lowest_offsets[x][y].0);
                 }
             }
-        }
-
-        let brick = bricks.remove(lowest_brick_index);
-
-        for b in bricks.iter_mut() {
-            b.1.2 -= lowest_offset as usize;
-            b.2.2 -= lowest_offset as usize;
         }
 
         for b in supports {
@@ -188,8 +180,7 @@ mod j22_tests {
     #[allow(unused)]
     fn test_p1() {
         assert_eq!(5, _p1(include_str!("j22_test.txt")));
-        assert_eq!(42, _p1(include_str!("j22.txt")));
-        // 542 too high
+        assert_eq!(471, _p1(include_str!("j22.txt")));
     }
 
     #[test]
