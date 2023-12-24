@@ -67,7 +67,7 @@ pub fn p1() -> usize {
 }
 
 #[allow(unused)]
-pub fn _p2(s: &str) -> usize {
+pub fn _p2(s: &str, count: usize) -> usize {
     let mut grid = heapless::Vec::<u8, GRID_CELLS_COUNT>::new();
 
     let mut rows = s.lines().count();
@@ -88,7 +88,7 @@ pub fn _p2(s: &str) -> usize {
     let start_row = start_pos / cols;
     let start_col = start_pos % cols;
 
-    let mut total_steps = 265013isize;
+    let mut total_steps = 5000isize;
 
     let mut total = 0;
 
@@ -102,15 +102,23 @@ pub fn _p2(s: &str) -> usize {
 
     let mut points = Vec::new();
     let mut filter_even = false;
-    for i in 0..=5000{
+    let mut even_count = 0;
+    let mut odd_count = 0;
+    for i in 0..=count{
         let even = (i) % 2 == 0;
         filter_even = !filter_even;
         next_to_explore.clear();
         while let Some((row, col)) = to_explore.pop() {
             if explored.contains(&(row, col, even)) {
+                // panic!();
                 continue;
             }
             explored.insert((row, col, even));
+            if even {
+                even_count += 1;
+            } else {
+                odd_count += 1;
+            }
 
             for (dr, dc) in directions.iter() {
                 let mut grid_row = row + dr;
@@ -126,25 +134,26 @@ pub fn _p2(s: &str) -> usize {
                 let grid_row = grid_row as usize % rows;
                 let grid_col = grid_col as usize % cols;
 
-                if grid[grid_row * cols + grid_col] == b'.' {
+                if grid[grid_row * cols + grid_col] == b'.' && !explored.contains(&(row + dr, col + dc, !even)) {
                     next_to_explore.push(( row + dr, col + dc));
                 }
             }
         }
         to_explore.append(&mut next_to_explore);
-        points.push((i, explored.iter().filter(|(row, col, even)| *even == filter_even).count()));
+        points.push((i, even_count));
+        // points.push((i, explored.iter().filter(|(row, col, even)| *even == filter_even).count()));
     }
 
     for (x, y) in points {
         println!("{{{x}, {y}}},");
     }
 
-    explored.iter().filter(|(row, col, even)| *even).count()
+    even_count
 }
 
 #[allow(unused)]
 pub fn p2() -> usize {
-    _p2(include_str!("j21.txt"))
+    _p2(include_str!("j21.txt"), 26501365)
 }
 
 #[cfg(test)]
@@ -156,14 +165,14 @@ mod j21_tests {
     #[test]
     #[allow(unused)]
     fn test_p1() {
-        assert_eq!(16, _p1(include_str!("j21_test.txt")));
+        assert_eq!(42, _p1(include_str!("j21_test.txt")));
         assert_eq!(3617, _p1(include_str!("j21.txt")));
     }
 
     #[test]
     #[allow(unused)]
     fn test_p2() {
-        // assert_eq!(42, _p2(include_str!("j21_test.txt")));
-        assert_eq!(42, _p2(include_str!("j21.txt")));
+        assert_eq!(16733044, _p2(include_str!("j21_test.txt"), 5000));
+        assert_eq!(42, _p2(include_str!("j21.txt"), 481843));
     }
 }
