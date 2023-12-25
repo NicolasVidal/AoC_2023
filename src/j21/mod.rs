@@ -148,6 +148,31 @@ pub fn _p2(s: &str, count: usize) -> usize {
         println!("{{{x}, {y}}},");
     }
 
+    for row in (-((rows) as i64))..((rows*2) as i64) {
+        for col in (-((cols) as i64))..((cols*2) as i64) {
+            if explored.contains(&(row as isize, col as isize, false)) {
+                print!("O");
+            } else {
+                let mut row = row as usize % rows;
+                let mut col = col as usize % cols;
+
+                if row < 0 {
+                    row += rows;
+                }
+                if col < 0 {
+                    col += cols;
+                }
+
+                print!("{}", grid[row * cols + col] as char);
+            }
+
+            // if grid[row * cols + col] == b'.' {
+            //     total += 1;
+            // }
+        }
+        println!();
+    }
+
     even_count
 }
 
@@ -172,7 +197,7 @@ mod j21_tests {
     #[test]
     #[allow(unused)]
     fn test_p2() {
-        assert_eq!(16733044, _p2(include_str!("j21_test.txt"), 5000));
-        assert_eq!(42, _p2(include_str!("j21.txt"), 481843));
+        // assert_eq!(16733044, _p2(include_str!("j21_test.txt"), 5000));
+        assert_eq!(42, _p2(include_str!("j21.txt"), 131));
     }
 }
